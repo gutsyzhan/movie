@@ -5,15 +5,8 @@
 # @File: models.py
 
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import pymysql
-
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@127.0.0.5/movie"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS	"] = True
-db = SQLAlchemy(app)
+from app import db
 
 
 # 定义会员数据模型
@@ -158,6 +151,10 @@ class Admin(db.Model):
 
     def __repr__(self):
         return '<Admin %r>' % self.name
+
+    def check_pwd(self, pwd):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
 
 
 # 定义管理员登陆日志数据模型
