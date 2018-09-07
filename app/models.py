@@ -12,6 +12,7 @@ from app import db
 # 定义会员数据模型
 class User(db.Model):
     __tablename__ = "user"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     name = db.Column(db.String(100), unique=True)  # 昵称
     pwd = db.Column(db.String(100))  # 密码
@@ -32,6 +33,7 @@ class User(db.Model):
 # 定义会员登录日志模型
 class UserLog(db.Model):
     __tablename__ = "userlog"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 所属会员
     ip = db.Column(db.String(100))  # 登录IP
@@ -44,6 +46,7 @@ class UserLog(db.Model):
 # 定义标签数据模型
 class Tag(db.Model):
     __tablename__ = "tag"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)   # 编号
     name = db.Column(db.String(100), unique=True)   # 标题
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
@@ -56,6 +59,7 @@ class Tag(db.Model):
 # 定义电影数据模型
 class Movie(db.Model):
     __tablename__ = "movie"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     title = db.Column(db.String(255), unique=True)  # 电影标题
     url = db.Column(db.String(255), unique=True)  # 电影地址
@@ -79,6 +83,7 @@ class Movie(db.Model):
 # 定义上映预告数据模型
 class Preview(db.Model):
     __tablename__ = "preview"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     title = db.Column(db.String(255), unique=True)  # 电影标题
     logo = db.Column(db.String(255), unique=True)  # 电影封面
@@ -91,6 +96,7 @@ class Preview(db.Model):
 # 定义评论数据模型
 class Comment(db.Model):
     __tablename__ = "comment"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     content = db.Column(db.Text)  # 评论内容
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'))  # 所属电影
@@ -104,6 +110,7 @@ class Comment(db.Model):
 # 定义收藏电影数据模型
 class MovieCol(db.Model):
     __tablename__ = "moviecol"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'))  # 所属电影
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 所属用户
@@ -116,6 +123,7 @@ class MovieCol(db.Model):
 # 定义权限数据模型
 class Auth(db.Model):
     __tablename__ = "auth"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     name = db.Column(db.String(100), unique=True)  # 名称
     url = db.Column(db.String(255), unique=True)  # 电影地址
@@ -128,6 +136,7 @@ class Auth(db.Model):
 # 定义角色数据模型
 class Role(db.Model):
     __tablename__ = "role"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     name = db.Column(db.String(100), unique=True)  # 名称
     auths = db.Column(db.String(600)) # 权限列表
@@ -140,6 +149,7 @@ class Role(db.Model):
 # 定义管理员数据模型
 class Admin(db.Model):
     __tablename__ = "admin"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     name = db.Column(db.String(100), unique=True)  # 管理员名称
     pwd = db.Column(db.String(100))  # 管理员密码
@@ -160,6 +170,7 @@ class Admin(db.Model):
 # 定义管理员登陆日志数据模型
 class AdminLog(db.Model):
     __tablename__ = "adminlog"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
     ip = db.Column(db.String(100))  # 登录IP
@@ -172,6 +183,7 @@ class AdminLog(db.Model):
 # 定义操作日志数据模型
 class OpLog(db.Model):
     __tablename__ = "oplog"
+    __table_args__ = {"useexisting": True}
     id = db.Column(db.Integer, primary_key=True)  # 编号
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
     ip = db.Column(db.String(100))  # 登录IP

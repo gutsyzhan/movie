@@ -7,10 +7,10 @@
 
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-import pymysql
+import mysql.connector
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@127.0.0.5/movie"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+mysqlconnector://root:root@127.0.0.5/movie"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS	"] = True
 app.config["SECRET_KEY"] = "movie_licheetools_top"
 app.debug = True

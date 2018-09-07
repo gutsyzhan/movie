@@ -6,7 +6,7 @@
             <h1>拾光电影管理系统</h1>
             <ol class="breadcrumb">
                 <li><a href="#"><i class="fa fa-dashboard"></i> 标签管理</a></li>
-                <li class="active">添加标签</li>
+                <li class="active">修改标签</li>
             </ol>
         </section>
         <section class="content" id="showcontent">
@@ -14,9 +14,9 @@
                 <div class="col-md-12">
                     <div class="box box-primary">
                         <div class="box-header with-border">
-                            <h3 class="box-title">添加标签</h3>
+                            <h3 class="box-title">修改标签</h3>
                         </div>
-                        <form role="form" method="post">
+                        <form role="form" method="post" action="{{ url_for('admin.tag_edit', id=tag.id) }}">
                             <div class="box-body">
                                 {% for msg in get_flashed_messages(category_filter=["ok"]) %}
                                     <div class="alert alert-success alert-dismissible">
@@ -39,7 +39,8 @@
 
                                 <div class="form-group">
                                     <label for="input_name">{{ form.name.label }}</label>
-                                            {{ form.name }}
+                                            {{ form.name(value=tag.name) }}
+                                <input name="id" value="{{ tag.id }}" type="hidden">
                                     {% for err in form.name.errors %}
                                         <div class="col-md-12">
                                             <p style="color:red">{{ err }}</p>

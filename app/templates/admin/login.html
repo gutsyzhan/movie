@@ -21,7 +21,7 @@
         {% for msg in get_flashed_messages() %}
             <p class="login-box-msg" style="color:red">{{ msg }}</p>
         {% endfor %}
-        <form  method="POST" id="form-data">
+        <form  method="post" id="form-data">
             <div class="form-group has-feedback">
                     {{ form.account }}
                 <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
