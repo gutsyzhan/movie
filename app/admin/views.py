@@ -8,8 +8,8 @@
 from functools import wraps
 from . import admin
 from flask import render_template, redirect, url_for, flash, session, request
-from app.admin.forms import LoginForm, TagForm, MovieForm
-from app.models import Admin, Tag, Movie
+from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
+from app.models import Admin, Tag, Movie, Preview, User, Comment
 from app import db, app
 from werkzeug.utils import secure_filename
 import os
@@ -226,7 +226,7 @@ def movie_edit(id=None):
 
 
 # 电影列表
-@admin.route('/movie/list/<int:page>', methods=["GET"])
+@admin.route('/movie/list/<int:page>/', methods=["GET"])
 @admin_login_req
 def movie_list(page=None):
     if page is None:
@@ -252,38 +252,140 @@ def movie_del(id=None):
 
 
 # 上映预告添加
-@admin.route('/preview/add')
+@admin.route('/preview/add', methods=["GET", "POST"])
 @admin_login_req
 def preview_add():
-    return render_template("admin/preview_add.html")
+    form = PreviewForm()
+    if form.validate_on_submit():
+        data = form.data
+        file_logo = secure_filename(form.logo.data.filename)
+        if not os.path.exists(app.config["UP_DIR"]):  # 如果文件夹不存在
+            os.makedirs(app.config["UP_DIR"])  # 新建对应的文件夹
+            os.chmod(app.config["UP_DIR"], "rw")  # 给文件夹赋予读写的权限
+        logo = change_filename(file_logo)
+        # 把他们进行保存到文件夹下面
+        form.logo.data.save(app.config["UP_DIR"] + logo)
+        # 之后的url和logo就是我们修改之后的地址
+        preview = Preview(
+            title=data["title"],
+            logo=logo,
+        )
+        db.session.add(preview)
+        db.session.commit()
+        flash("添加预告成功！", "ok")
+        return redirect(url_for("admin.preview_add"))
+    return render_template("admin/preview_add.html", form=form)
+
+
+# 上映预告编辑
+@admin.route('/preview/edit/<int:id>', methods=["GET", "POST"])
+@admin_login_req
+def preview_edit(id):
+    form = PreviewForm()
+    form.logo.validators = []  # 如果封面为空，我们就不需要修改
+    preview = Preview.query.get_or_404(int(id))
+    if request.method == "GET":
+        form.title.data = preview.title   # 给title赋初始值
+    if form.validate_on_submit():
+        data = form.data
+        if form.logo.data != "":
+            file_logo = secure_filename(form.logo.data.filename)
+            preview.logo = change_filename(file_logo)
+            form.logo.data.save(app.config["UP_DIR"] + preview.logo)
+        preview.title = data["title"]
+        db.session.add(preview)
+        db.session.commit()
+        flash("修改预告成功！", "ok")
+        return redirect(url_for('admin.preview_edit', id=id))
+    return render_template("admin/preview_edit.html", form=form, preview=preview)
 
 
 # 上映预告列表
-@admin.route('/preview/list')
+@admin.route('/preview/list/<int:page>/', methods=["GET"])
 @admin_login_req
-def preview_list():
-    return render_template("admin/preview_list.html")
+def preview_list(page=None):
+    if page is None:
+        page = 1
+    # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = Preview.query.order_by(
+        Preview.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("admin/preview_list.html", page_data=page_data)
+
+
+# 预告删除
+@admin.route('/preview/del/<int:id>', methods=["GET"])
+@admin_login_req
+def preview_del(id=None):
+    preview = Preview.query.get_or_404(int(id))
+    db.session.delete(preview)
+    db.session.commit()
+    flash("预告删除成功！", "ok")
+    return redirect(url_for("admin.preview_list", page=1))
 
 
 # 会员列表
-@admin.route('/user/list')
+@admin.route('/user/list/<int:page>/', methods=["GET"])
 @admin_login_req
-def user_list():
+def user_list(page=None):
+    if page is None:
+        page = 1
+        # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = User.query.order_by(
+        User.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("admin/user_list.html", page_data=page_data)
     return render_template("admin/user_list.html")
 
 
 # 查看会员
-@admin.route('/user/view')
+@admin.route('/user/view/<int:id>', methods=["GET"])
 @admin_login_req
-def user_view():
-    return render_template("admin/user_view.html")
+def user_view(id=None):
+    user = User.query.get_or_404(int(id))
+    return render_template("admin/user_view.html", user=user)
+
+
+# 删除会员
+@admin.route('/user/del/<int:id>', methods=["GET"])
+@admin_login_req
+def user_del(id=None):
+    user = User.query.get_or_404(int(id))
+    db.session.delete(user)
+    db.session.commit()
+    flash("会员删除成功！", "ok")
+    return redirect(url_for("admin.user_list", page=1))
 
 
 # 评论列表
-@admin.route('/comment/list')
+@admin.route('/comment/list/<int:page>/', methods=["GET"])
 @admin_login_req
-def comment_list():
-    return render_template("admin/comment_list.html")
+def comment_list(page=None):
+    if page is None:
+        page = 1
+        # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == Comment.movie_id,
+        User.id == Comment.user_id
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("admin/comment_list.html", page_data=page_data)
+
+
+# 删除评论
+@admin.route('/comment/del/<int:id>', methods=["GET"])
+@admin_login_req
+def comment_del(id=None):
+    comment = Comment.query.get_or_404(int(id))
+    db.session.delete(comment)
+    db.session.commit()
+    flash("评论删除成功！", "ok")
+    return redirect(url_for("admin.comment_list", page=1))
 
 
 # 电影收藏列表

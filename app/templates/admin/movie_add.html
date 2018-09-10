@@ -74,7 +74,7 @@
                                 <label for="input_logo">{{ form.logo.label }}</label>
                                 <!-- <input type="file" id="input_logo"> -->
                                 {{ form.logo }}
-                                  {% for err in form.logo.errors %}
+                                {% for err in form.logo.errors %}
                                     <div class="col-md-12">
                                         <p style="color:red">{{ err }}</p>
                                     </div>
