@@ -8,8 +8,8 @@
 from functools import wraps
 from . import admin
 from flask import render_template, redirect, url_for, flash, session, request
-from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
-from app.models import Admin, Tag, Movie, Preview, User, Comment
+from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm, PwdForm
+from app.models import Admin, Tag, Movie, Preview, User, Comment, MovieCol
 from app import db, app
 from werkzeug.utils import secure_filename
 import os
@@ -35,7 +35,7 @@ def login():
         data = form.data
         admin = Admin.query.filter_by(name=data["account"]).first()
         if not admin.check_pwd(data["pwd"]):  # 切记密码错误时，check_pwd返回false,但此时not check_pwd(data["pwd"])为真！
-            flash("密码错误！")
+            flash("密码错误！", "err")
             return redirect(url_for("admin.login"))
         session["admin"] = data["account"]   # 如果密码正确，就定义session的会话把数据保存到数据库。
         return redirect(request.args.get("next") or url_for("admin.index"))
@@ -51,10 +51,20 @@ def logout():
 
 
 # 修改密码
-@admin.route('/pwd/')
+@admin.route('/pwd/', methods=["GET", "POST"])
 @admin_login_req
 def pwd():
-    return render_template("admin/pwd.html")
+    form = PwdForm()
+    if form.validate_on_submit():   # 表单验证，没有这个则无法进行错误信息提示
+        data = form.data
+        admin = Admin.query.filter_by(name=session["admin"]).first()
+        from werkzeug.security import generate_password_hash
+        admin.pwd = generate_password_hash(data["new_pwd"])
+        db.session.add(admin)
+        db.session.commit()
+        flash("修改密码成功，请重新登录！", "ok")
+        return redirect(url_for("admin.logout"))
+    return render_template("admin/pwd.html", form=form)
 
 
 # 后台首页
@@ -389,10 +399,34 @@ def comment_del(id=None):
 
 
 # 电影收藏列表
-@admin.route('/moviecol/list')
+@admin.route('/moviecol/list/<int:page>/', methods=["GET"])
 @admin_login_req
-def moviecol_list():
-    return render_template("admin/moviecol_list.html")
+def moviecol_list(page=None):
+    if page is None:
+        page = 1
+        # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = MovieCol.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == MovieCol.movie_id,
+        User.id == MovieCol.user_id
+    ).order_by(
+        MovieCol.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("admin/moviecol_list.html", page_data=page_data)
+
+
+# 删除收藏
+@admin.route('/moviecol/del/<int:id>', methods=["GET"])
+@admin_login_req
+def moviecol_del(id=None):
+    moviecol = MovieCol.query.get_or_404(int(id))
+    db.session.delete(moviecol)
+    db.session.commit()
+    flash("收藏删除成功！", "ok")
+    return redirect(url_for("admin.moviecol_list", page=1))
 
 
 # 操作日志列表
