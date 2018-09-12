@@ -17,31 +17,77 @@
                     <div class="box-header with-border">
                         <h3 class="box-title">添加管理员</h3>
                     </div>
-                    <form role="form">
+                    <form role="form" method="post">
                         <div class="box-body">
+
+                             {% for msg in get_flashed_messages(category_filter=["ok"]) %}
+                                <div class="alert alert-success alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                                    </button>
+                                    <h4><i class="icon fa fa-check"></i> 操作成功</h4>
+                                    {{ msg }}
+                                </div>
+                            {% endfor %}
+
+                            {% for msg in get_flashed_messages(category_filter=["err"]) %}
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                                    </button>
+                                    <h4><i class="icon fa fa-ban"></i> 操作失败</h4>
+                                    {{ msg }}
+                                </div>
+                            {% endfor %}
+
                             <div class="form-group">
-                                <label for="input_name">管理员名称</label>
-                                <input type="text" class="form-control" id="input_name" placeholder="请输入管理员名称！">
+                                <label for="input_name">{{ form.name.label }}</label>
+                              <!--  <input type="text" class="form-control" id="input_name" placeholder="请输入管理员名称！"> -->
+                                {{ form.name }}
+                                {% for err in form.name.errors %}
+                                    <div class="col-md-12">
+                                        <p style="color:red">{{ err }}</p>
+                                    </div>
+                                {% endfor %}
+
                             </div>
                             <div class="form-group">
-                                <label for="input_pwd">管理员密码</label>
-                                <input type="password" class="form-control" id="input_pwd" placeholder="请输入管理员密码！">
+                                <label for="input_pwd">{{ form.pwd.label }}</label>
+                               <!-- <input type="password" class="form-control" id="input_pwd" placeholder="请输入管理员密码！"> -->
+                                {{ form.pwd }}
+                                {% for err in form.pwd.errors %}
+                                    <div class="col-md-12">
+                                        <p style="color:red">{{ err }}</p>
+                                    </div>
+                                {% endfor %}
                             </div>
                             <div class="form-group">
-                                <label for="input_re_pwd">管理员重复密码</label>
-                                <input type="password" class="form-control" id="input_re_pwd"
-                                       placeholder="请输入管理员重复密码！">
+                                <label for="input_re_pwd">{{ form.repwd.label }}</label>
+                              <!--  <input type="password" class="form-control" id="input_re_pwd"
+                                       placeholder="请输入管理员重复密码！"> -->
+                                {{ form.repwd }}
+                                {% for err in form.repwd.errors %}
+                                    <div class="col-md-12">
+                                        <p style="color:red">{{ err }}</p>
+                                    </div>
+                                {% endfor %}
                             </div>
                             <div class="form-group">
-                                <label for="input_role_id">所属角色</label>
-                                <select class="form-control" id="input_role_id">
+                                <label for="input_role_id">{{ form.role_id.label }}</label>
+                              <!--   <select class="form-control" id="input_role_id">
                                     <option value="0">---请选择所属角色---</option>
                                     <option value="1">xxx</option>
-                                </select>
+                                </select> -->
+                                {{ form.role_id }}
+                                {% for err in form.role_id.errors %}
+                                    <div class="col-md-12">
+                                        <p style="color:red">{{ err }}</p>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary">添加</button>
+                           <!-- <button type="submit" class="btn btn-primary">添加</button> -->
+                            {{ form.csrf_token }}
+                            {{ form.submit }}
                         </div>
                     </form>
                 </div>

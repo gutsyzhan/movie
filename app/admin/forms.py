@@ -7,8 +7,8 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, FileField, TextAreaField, SelectField, SelectMultipleField
-from wtforms.validators import DataRequired, ValidationError
-from app.models import Admin, Tag, Auth
+from wtforms.validators import DataRequired, ValidationError, EqualTo
+from app.models import Admin, Tag, Auth, Role
 
 
 # 后台管理员登录表单
@@ -325,5 +325,68 @@ class RoleFrom(FlaskForm):
         '修改',
         render_kw={
             "class": "btn btn-primary",
+        }
+    )
+
+
+# 添加管理员
+class AdminForm(FlaskForm):
+    name = StringField(
+        label="管理员名称",
+        validators=[
+            DataRequired("管理员名称不能为空！")
+        ],
+        description="管理员名称",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入管理员名称!",
+            # "required": "required"   # 注释此处显示forms报错errors信息
+        }
+    )
+
+    pwd = PasswordField(
+        label="管理员密码",
+        validators=[
+            DataRequired("管理员密码不能为空！")
+        ],
+        description="管理员密码",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入管理员密码!",
+            # "required": "required"   # 注释此处显示forms报错errors信息
+        }
+    )
+    repwd = PasswordField(
+        label="管理员重复密码",
+        validators=[
+            DataRequired("管理员重复密码不能为空！"),
+            EqualTo('pwd', message="两次密码不一致！")
+        ],
+        description="管理员重复密码",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入管理员重复密码!",
+            # "required": "required"   # 注释此处显示forms报错errors信息
+        }
+    )
+    role_id = SelectField(
+        label="所属角色",
+        validators=[
+            DataRequired("请选择所属角色！")
+        ],
+        # 所属角色是整数型
+        coerce=int,
+        # 采用下拉选择的方式进行所属角色的选择
+        choices=[(v.id, v.name) for v in Role.query.all()],
+        description="所属角色",
+        render_kw={
+            "class": "form-control",
+        }
+    )
+
+    submit = SubmitField(
+        '编辑',
+        render_kw={
+            "class": "btn btn-primary btn-block btn-flat",
         }
     )

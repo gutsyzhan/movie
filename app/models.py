@@ -140,6 +140,7 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # 编号
     name = db.Column(db.String(100), unique=True)  # 名称
     auths = db.Column(db.String(600)) # 权限列表
+    admins = db.relationship("Admin", backref='role')  # 管理员外键关系关联
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
 
     def __repr__(self):
