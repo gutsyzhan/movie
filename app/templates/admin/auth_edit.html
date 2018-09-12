@@ -1,20 +1,12 @@
 {% extends "admin/admin.html" %}
 
-{% block css %}
-    <style>
-        #auth_list .col-md-12,#auth_list .col-md-2{
-            padding:0px;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
     <!--内容-->
     <section class="content-header">
         <h1>拾光电影管理系统</h1>
         <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> 角色管理</a></li>
-            <li class="active">添加角色</li>
+            <li><a href="#"><i class="fa fa-dashboard"></i> 权限管理</a></li>
+            <li class="active">编辑权限</li>
         </ol>
     </section>
     <section class="content" id="showcontent">
@@ -22,12 +14,12 @@
             <div class="col-md-12">
                 <div class="box box-primary">
                     <div class="box-header with-border">
-                        <h3 class="box-title">添加角色</h3>
+                        <h3 class="box-title">编辑权限</h3>
                     </div>
-                    <form role="form" method="post">
+                    <form role="form" method="post" >
                         <div class="box-body">
 
-                             {% for msg in get_flashed_messages(category_filter=["ok"]) %}
+                            {% for msg in get_flashed_messages(category_filter=["ok"]) %}
                                 <div class="alert alert-success alert-dismissible">
                                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
                                     </button>
@@ -45,36 +37,29 @@
                                 </div>
                             {% endfor %}
 
-
                             <div class="form-group">
                                 <label for="input_name">{{ form.name.label }}</label>
-                              <!--  <input type="text" class="form-control" id="input_name" placeholder="请输入角色名称！"> -->
-                                {{ form.name }}
+                             <!--   <input type="text" class="form-control" id="input_name" placeholder="请输入权限名称！">  -->
+                                {{ form.name(value=auth.name) }}
                                 {% for err in form.name.errors %}
                                     <div class="col-md-12">
                                         <p style="color:red">{{ err }}</p>
                                     </div>
                                 {% endfor %}
                             </div>
-                            <div class="form-group" id="auth_list">
-                                <div class="col-md-12">
-                                    <label>{{ form.auths.label }}</label>
-                                </div>
-                                <div class="col-md-2">
-                                    <label>
-                                        <!--   <input type="checkbox" name="input_url"> 添加标签 -->
-                                        {{ form.auths }}
-                                        {% for err in form.auths.errors %}
-                                            <div class="col-md-12">
-                                                <p style="color:red">{{ err }}</p>
-                                            </div>
-                                        {% endfor %}
-                                    </label>
-                                </div>
+                            <div class="form-group">
+                                <label for="input_url">{{ form.url.label }}</label>
+                              <!--  <input type="text" class="form-control" id="input_url" placeholder="请输入权限地址！"> -->
+                                {{ form.url(value=auth.url) }}
+                                {% for err in form.url.errors %}
+                                    <div class="col-md-12">
+                                        <p style="color:red">{{ err }}</p>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class="box-footer">
-                           <!-- <button type="submit" class="btn btn-primary">添加</button> -->
+                          <!--  <button type="submit" class="btn btn-primary">添加</button> -->
                             {{ form.csrf_token }}
                             {{ form.submit }}
                         </div>
@@ -89,8 +74,8 @@
 {% block js %}
     <script>
     $(document).read(function () {
-         $("#g-10").addClass("active");
-         $("#g-10-1").addClass("active");
+         $("#g-9").addClass("active");
+         $("#g-9-1").addClass("active");
     });
     </script>
 {% endblock %}
