@@ -71,7 +71,7 @@ class Movie(db.Model):
     logo = db.Column(db.String(255), unique=True)  # 电影封面
     star = db.Column(db.SmallInteger)  # 星级
     playnum = db.Column(db.BigInteger)  # 电影播放量
-    commentnum = db.Column(db.BigInteger)  # 电影播放量
+    commentnum = db.Column(db.BigInteger)  # 电影评论量
     tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'))  # 所属标签
     area = db.Column(db.String(255))  # 地区
     release_time = db.Column(db.Date)  # 发布时间

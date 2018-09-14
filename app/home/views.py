@@ -7,8 +7,8 @@
 
 from . import home
 from flask import render_template, redirect, url_for, request
-from app.home.forms import RegisterForm, LoginForm, UserdetailForm, PwdForm
-from app.models import User, UserLog
+from app.home.forms import RegisterForm, LoginForm, UserdetailForm, PwdForm, CommentForm
+from app.models import User, UserLog, Preview, Tag, Movie, Comment, MovieCol
 from werkzeug.security import generate_password_hash
 import uuid
 from app import db, app
@@ -33,7 +33,7 @@ def user_login_req(f):
 # 修改文件名称
 def change_filename(filename):
     fileinfo = os.path.splitext(filename)
-    filename = datetime.now().strftime("%Y%m%d%H%M%S") + str(uuid.uuid4().hex) + fileinfo[-1]  # 文件后缀
+    filename = datetime.datetime.now().strftime("%Y%m%d%H%M%S") + str(uuid.uuid4().hex) + fileinfo[-1]  # 文件后缀
     return filename
 
 
@@ -157,10 +157,24 @@ def pwd():
 
 
 # 评论记录
-@home.route('/comments/')
+@home.route('/comments/<int:page>', methods=["GET"])
 @user_login_req
-def comments():
-    return render_template("home/comments.html")
+def comments(page=None):
+    if page is None:
+        page = 1
+        # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == Comment.movie_id,
+        User.id == session["user_id"]
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)
+
+    return render_template("home/comments.html", page_data=page_data)
 
 
 # 登入日志
@@ -178,33 +192,175 @@ def loginlog(page=None):
     return render_template("home/loginlog.html", page_data=page_data)
 
 
-# 收藏电影
-@home.route('/moviecol/')
+# 添加收藏电影
+@home.route('/moviecol/add/', methods=["GET"])
 @user_login_req
-def moviecol():
-    return render_template("home/moviecol.html")
+def moviecol_add():
+    mid = request.args.get("mid", "")
+    uid = request.args.get("uid", "")
+    moviecol = MovieCol.query.filter_by(
+        user_id=int(uid),
+        movie_id=int(mid),
+    ).count()
+    if moviecol == 1:
+        data = dict(ok=0)
+    if moviecol == 0:
+        moviecol = MovieCol(
+            user_id=int(uid),
+            movie_id=int(mid),
+        )
+        db.session.add(moviecol)
+        db.session.commit()
+        data = dict(ok=1)
+    import json
+    return json.dumps(data)
+
+
+# 收藏电影
+@home.route('/moviecol/<int:page>/', methods=["GET"])
+@user_login_req
+def moviecol(page=None):
+    if page is None:
+        page = 1
+        # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = MovieCol.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        User.id == session["user_id"],
+        Movie.id == MovieCol.movie_id
+    ).order_by(
+        MovieCol.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("home/moviecol.html", page_data=page_data)
 
 
 # 首页
-@home.route('/')
-def index():
-    return render_template("home/index.html")
+@home.route("/<int:page>/", methods=["GET"])
+@home.route("/", methods=["GET"])
+def index(page=None):
+    tags = Tag.query.all()
+    page_data = Movie.query
+
+    movtag = request.args.get("movtag", 0)    # 获取电影标签
+    if int(movtag) != 0:
+        page_data = page_data.filter_by(tag_id=int(movtag))
+
+    star = request.args.get("star", 0)  # 获取电影星级
+    if int(star) != 0:
+        page_data = page_data.filter_by(star=int(star))
+
+    ontime = request.args.get("ontime", 0)  # 获取上映时间
+    if int(ontime) != 0:
+        if int(ontime) == 1:
+            page_data = page_data.order_by(
+                Movie.addtime.desc()
+            )
+        else:
+            page_data = page_data.order_by(
+                Movie.addtime.asc()
+            )
+
+    playnum = request.args.get("playnum", 0)  # 获取播放数量
+    if int(playnum) != 0:
+        if int(playnum) == 1:
+            page_data = page_data.order_by(
+                Movie.playnum.desc()
+            )
+        else:
+            page_data = page_data.order_by(
+                Movie.playnum.asc()
+            )
+
+    commnum = request.args.get("commnum", 0)  # 获取评论数量
+    if int(commnum) != 0:
+        if int(commnum) == 1:
+            page_data = page_data.order_by(
+                Movie.commentnum.desc()
+            )
+        else:
+            page_data = page_data.order_by(
+                Movie.commentnum.asc()
+            )
+    if page is None:
+        page = 1
+    page_data = page_data.paginate(page=page, per_page=12)
+
+    p = dict(
+        movtag=movtag,
+        star=star,
+        ontime=ontime,
+        playnum=playnum,
+        commnum=commnum
+    )
+    return render_template("home/index.html", tags=tags, p=p, page_data=page_data)
 
 
 # 动画
 @home.route('/animation/')
 def animation():
-    return render_template("home/animation.html")
+    data = Preview.query.all()
+    return render_template("home/animation.html", data=data)
 
 
 # 搜索页面
-@home.route('/search/')
-def search():
-    return render_template("home/search.html")
+@home.route('/search/<int:page>/')
+def search(page=None):
+    if page is None:
+        page = 1
+    key = request.args.get('key', '')
+    movie_count = Movie.query.filter(
+        Movie.title.ilike('%' + key + '%')
+    ).count()
+    page_data = Movie.query.filter(
+        Movie.title.ilike('%' + key + '%')
+    ).order_by(
+        Movie.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("home/search.html", key=key, movie_count=movie_count, page_data=page_data)
 
 
 # 详情页面
-@home.route('/play/')
-def play():
-    return render_template("home/play.html")
+@home.route('/play/<int:id>/<int:page>/', methods=["GET", "POST"])
+def play(id=None, page=None):
+    movie = Movie.query.join(Tag).filter(
+        Tag.id == Movie.tag_id,
+        Movie.id == int(id)
+    ).first_or_404()
+
+    if page is None:
+        page = 1
+        # 查询的时候关联标签，采用join来加进去,多表关联用filter,过滤用filter_by
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == movie.id,
+        User.id == Comment.user_id
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)
+
+    movie.playnum = movie.playnum + 1
+    form = CommentForm()
+    if "user" in session and form.validate_on_submit():
+        data = form.data
+        comment = Comment(
+            content=data["content"],    # 左侧字段与数据库Comment字段保持一致
+            movie_id=movie.id,
+            user_id=session["user_id"]
+        )
+        db.session.add(comment)
+        db.session.commit()
+        movie.commentnum = movie.commentnum + 1
+        db.session.add(movie)
+        db.session.commit()
+        flash("添加评论成功！", "ok")
+        return redirect(url_for("home.play", id=movie.id, page=1))
+        movie.commentnum = movie.commentnum+1
+    db.session.add(movie)
+    db.session.commit()
+    return render_template("home/play.html", movie=movie, form=form, page_data=page_data)
 
