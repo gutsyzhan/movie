@@ -42,8 +42,14 @@
 
                         {% for v in page_data.items %}
                         <div class="box-comment">
-                            <img class="img-circle img-sm"
-                                 src="{{ url_for('static', filename='uploads/users/'+v.user.face) }}" alt="User Image">
+                            {% if v.user.face %}
+                                <img class="img-circle img-sm"
+                                     src="{{ url_for('static', filename='uploads/users/'+v.user.face) }}"
+                                     alt="User Image">
+                            {% else %}
+                                <img class="img-circle img-sm"
+                                     data-src="holder.js/50x50" alt="User Image">
+                            {% endif %}
                             <div class="comment-text">
                                     <span class="username">
                                         {{ v.user.name }}
@@ -53,7 +59,7 @@
                                             {{ v.addtime }}
                                         </span>
                                     </span>
-                                关于电影<a>{{ v.movie.title }}</a>的评论：{{ v.content }}
+                                关于电影<a>{{ v.movie.title }}</a>的评论：{{ v.content|safe }}
                                 <br><a href="{{ url_for('admin.comment_del', id=v.id) }}" class="label label-danger pull-right">删除</a>
                             </div>
                         </div>
