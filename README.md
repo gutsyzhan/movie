@@ -29,6 +29,8 @@ $ python3 manage.py runserver
 
 个人博客：http://blog.licheetools.top
 
+啃饼网：http://www.licheetools.top
+
 QQ：2810706745（啃饼小白）
 
 微信公众号：啃饼思录
