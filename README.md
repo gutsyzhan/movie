@@ -21,11 +21,9 @@ $ python3 manage.py runserver
 ```
 然后在浏览器地址输入：http://127.0.0.1:5000
 ## 教程地址
-关注简书博主：啃饼小白，或者直接查看主页：https://www.jianshu.com/u/f58202bc1644
+啃饼网：http://www.licheetools.top
 ## 关于博主
 努力与运动兼备~~~
-
-简书主页：https://www.jianshu.com/u/f58202bc1644
 
 个人博客：http://blog.licheetools.top
 
