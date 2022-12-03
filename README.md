@@ -3,18 +3,18 @@
 # 开发环境
 Python3.6. + Flask1.0 + Virtualenv + Mysql + Dplayer.js
 # 演示地址
-请在浏览器地址栏输入：http://movie.licheetools.top
+请在浏览器地址栏输入：http://movie.kenbings.top
 # 快速运行
 如果你的机器上只安装了Python3，那么命令如下：
 ```
-$ git clone https://github.com/licheetools/movie.git
+$ git clone https://github.com/kenbings/movie.git
 $ cd movie
 $ pip install -r requirements.txt
 $ python manage.py runserver
 ```
 如果Python2与Python3兼有，请使用下面的命令：
 ```
-$ git clone https://github.com/licheetools/movie.git
+$ git clone https://github.com/kenbings/movie.git
 $ cd movie
 $ pip3 install -r requirements.txt
 $ python3 manage.py runserver
